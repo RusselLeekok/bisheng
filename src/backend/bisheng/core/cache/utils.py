@@ -15,7 +15,10 @@ from urllib.parse import unquote, urlparse
 from uuid import uuid4
 
 import aiofiles
-import cchardet
+try:
+    import cchardet
+except ImportError:
+    import chardet as cchardet
 import requests
 from appdirs import user_cache_dir
 from fastapi import UploadFile

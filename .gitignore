@@ -261,6 +261,8 @@ sftp-config.json
 docker/data/*
 docker/mysql/data/*
 docker/office/bisheng/*.gz
+src/backend/bisheng/config.yaml
+src/backend/minio
 
 CLAUDE.md
 !src/backend/bisheng/telemetry_search/**/*.pyc
