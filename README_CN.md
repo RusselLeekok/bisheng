@@ -99,6 +99,10 @@ docker compose -f docker-compose.yml -p bisheng up -d
 
 其他安装部署问题参考：[私有化部署](https://dataelem.feishu.cn/wiki/BSCcwKd4Yiot3IkOEC8cxGW7nPc)
 
+## 构建完整项目前后端镜像
+cd C:\Users\sz966\bisheng
+docker compose -f docker\docker-compose.yml -f docker\docker-compose.local-build.yml -p bisheng build backend frontend
+
 
 ## 资源
 - [📄应用案例/场景库](https://dataelem.feishu.cn/wiki/ZfkmwLPfeiAhQSkK2WvcX87unxc)
