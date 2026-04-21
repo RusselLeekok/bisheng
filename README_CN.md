@@ -88,7 +88,10 @@ cd C:\Users\sz966\bisheng\docke
 docker compose -f docker-compose-frontend-local.yml -p bisheng-frontend-local up -d
 docker compose -f docker-compose-frontend-local.yml -p bisheng stop frontend
 
-# 前后端
+# 后端
+sudo service mysql start
+redis-server
+./minio server /data --console-address ":9001"
 # 进入bisheng/docker或bisheng-main/docker目录，执行
 docker compose -f docker-compose.yml -p bisheng up -d
 ```
