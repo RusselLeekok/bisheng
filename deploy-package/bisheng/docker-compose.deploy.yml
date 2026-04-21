@@ -1,0 +1,12 @@
+services:
+  backend:
+    image: ${BISHENG_BACKEND_IMAGE:?set BISHENG_BACKEND_IMAGE in .env}
+    pull_policy: missing
+
+  backend_worker:
+    image: ${BISHENG_BACKEND_IMAGE:?set BISHENG_BACKEND_IMAGE in .env}
+    pull_policy: missing
+
+  frontend:
+    image: ${BISHENG_FRONTEND_IMAGE:?set BISHENG_FRONTEND_IMAGE in .env}
+    pull_policy: missing

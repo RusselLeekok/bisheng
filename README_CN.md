@@ -80,11 +80,11 @@ unzip main.zip && cd bisheng-main/docker
 ```bash
 # 前端
 # npm运行
-cd C:\Users\sz966\bisheng\src\frontend\platform
+cd .\bisheng\src\frontend\platform
 npm run start
 
 # docker运行
-cd C:\Users\sz966\bisheng\docke
+cd .\bisheng\docke
 docker compose -f docker-compose-frontend-local.yml -p bisheng-frontend-local up -d
 docker compose -f docker-compose-frontend-local.yml -p bisheng stop frontend
 
@@ -101,8 +101,9 @@ docker compose -f docker-compose.yml -p bisheng up -d
 
 ## 构建完整项目前后端镜像
 ```bash
-cd C:\Users\sz966\bisheng
+cd .\bisheng
 docker compose -f docker\docker-compose.yml -f docker\docker-compose.local-build.yml -p bisheng build backend frontend
+```
 
 
 ## 资源
