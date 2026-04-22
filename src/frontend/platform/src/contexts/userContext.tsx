@@ -140,9 +140,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
             // Jump to the route based on permissions 
             if (pathName === '/admin') {
                 const MENU_ROUTE_MAP = [
-                    { key: 'board', path: '/dashboard' },
                     { key: 'build', path: '/build/apps' },
                     { key: 'knowledge', path: '/filelib' },
+                    { key: 'board', path: '/dashboard' },
                     { key: 'model', path: '/model/management' },
                     { key: 'evaluation', path: '/evaluation' },
                     { key: 'label', path: '/label' }, // 兜底选项放在最后

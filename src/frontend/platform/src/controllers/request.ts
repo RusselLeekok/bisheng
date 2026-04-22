@@ -32,11 +32,11 @@ customAxios.interceptors.response.use(function (response) {
     const errorMessage = i18Msg === `errors.${response.data.status_code}` ? response.data.status_message : i18Msg
 
     // 无权访问
-    if ([403, 404].includes(response.data.status_code) && response.config.url !== '/api/v1/user/info') {
+    if (response.data.status_code === 403 && response.config.url !== '/api/v1/user/info') {
         // 修改不跳转
         localStorage.setItem('noAccessUrl', response.request.responseURL)
         if (response.config.method === 'get') {
-            location.href = __APP_ENV__.BASE_URL + '/' + response.data.status_code
+            location.href = __APP_ENV__.BASE_URL + '/403'
         }
         return Promise.reject(errorMessage);
     }

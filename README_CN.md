@@ -80,7 +80,7 @@ unzip main.zip && cd bisheng-main/docker
 ```bash
 # 前端
 # npm运行
-cd .\bisheng\src\frontend\platform
+cd .\src\frontend\platform
 npm run start
 
 # docker运行
@@ -89,6 +89,7 @@ docker compose -f docker-compose-frontend-local.yml -p bisheng-frontend-local up
 docker compose -f docker-compose-frontend-local.yml -p bisheng stop frontend
 
 # 后端
+cd .\bisheng\src\backend
 sudo service mysql start
 redis-server
 ./minio server /data --console-address ":9001"
