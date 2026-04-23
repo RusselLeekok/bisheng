@@ -17,6 +17,7 @@ from loguru import logger
 from sse_starlette import EventSourceResponse
 
 from bisheng.api.services import knowledge_imp
+from bisheng.api.services.assistant_base import AssistantUtils
 from bisheng.api.services.audit_log import AuditLogService
 from bisheng.api.services.knowledge import KnowledgeService
 from bisheng.api.services.workflow import WorkFlowService
@@ -59,6 +60,11 @@ promptSearch = '用户的问题是：%s \
 如果问题涉及到实时信息、最新事件或特定数据库查询等超出你知识截止日期（2024年7月）的内容，就需要进行联网搜索来获取最新信息。'
 
 visual_model_file_types = ['png', 'jpg', 'jpeg', 'webp', 'gif']
+_WORKSTATION_DEFAULT_CONTEXT_TOKENS = 16384
+_WORKSTATION_DEFAULT_OUTPUT_TOKENS = 2048
+_WORKSTATION_MIN_OUTPUT_TOKENS = 512
+_WORKSTATION_CONTEXT_SAFETY_TOKENS = 512
+_TOKEN_ENCODING = None
 
 
 # Customizable JSON Serializer
@@ -79,6 +85,147 @@ def user_message(msgId, conversationId, sender, text):
         'created': True
     })
     return f'event: message\ndata: {msg}\n\n'
+
+
+def _get_token_encoding():
+    global _TOKEN_ENCODING
+    if _TOKEN_ENCODING is None:
+        _TOKEN_ENCODING = AssistantUtils.cl100k_base()
+    return _TOKEN_ENCODING
+
+
+def _count_text_tokens(text: str) -> int:
+    if not text:
+        return 0
+    return len(_get_token_encoding().encode(text, disallowed_special=()))
+
+
+def _truncate_text_by_tokens(text: str, max_tokens: int) -> str:
+    if not text or max_tokens <= 0:
+        return ''
+    encoding = _get_token_encoding()
+    tokens = encoding.encode(text, disallowed_special=())
+    if len(tokens) <= max_tokens:
+        return text
+    return encoding.decode(tokens[:max_tokens])
+
+
+def _parse_config_dict(value):
+    if isinstance(value, str) and value:
+        try:
+            return json.loads(value)
+        except Exception:
+            return {}
+    return value if isinstance(value, dict) else {}
+
+
+def _get_model_context_tokens(llm: BishengLLM) -> int:
+    model_config = _parse_config_dict(getattr(getattr(llm, 'model_info', None), 'config', None))
+    user_kwargs = _parse_config_dict(model_config.get('user_kwargs'))
+    model_kwargs = _parse_config_dict(user_kwargs.get('model_kwargs')) | _parse_config_dict(model_config.get('model_kwargs'))
+    for config in [model_config, user_kwargs, model_kwargs]:
+        for key in [
+            'context_length',
+            'max_context_length',
+            'max_context_tokens',
+            'model_context_length',
+            'max_model_len',
+            'num_ctx',
+        ]:
+            if config.get(key):
+                try:
+                    return int(config[key])
+                except Exception:
+                    pass
+
+    model_name = getattr(llm, 'model_name', '') or getattr(getattr(llm, 'model_info', None), 'model_name', '')
+    model_name = model_name.lower()
+    context_hints = [
+        ('128k', 128000),
+        ('64k', 64000),
+        ('32k', 32768),
+        ('16k', 16384),
+        ('8k', 8192),
+        ('4k', 4096),
+    ]
+    for marker, context_tokens in context_hints:
+        if marker in model_name:
+            return context_tokens
+    return _WORKSTATION_DEFAULT_CONTEXT_TOKENS
+
+
+def _get_requested_output_tokens(llm: BishengLLM) -> int:
+    model_config = _parse_config_dict(getattr(getattr(llm, 'model_info', None), 'config', None))
+    user_kwargs = _parse_config_dict(model_config.get('user_kwargs'))
+    model_kwargs = _parse_config_dict(user_kwargs.get('model_kwargs')) | _parse_config_dict(model_config.get('model_kwargs'))
+    for config in [model_config, user_kwargs, model_kwargs]:
+        if config.get('max_tokens'):
+            try:
+                return int(config['max_tokens'])
+            except Exception:
+                pass
+    return _WORKSTATION_DEFAULT_OUTPUT_TOKENS
+
+
+def _message_content_tokens(content) -> int:
+    if isinstance(content, str):
+        return _count_text_tokens(content)
+    if isinstance(content, list):
+        total = 0
+        for item in content:
+            if isinstance(item, dict) and item.get('type') == 'text':
+                total += _count_text_tokens(item.get('text', ''))
+        return total
+    return _count_text_tokens(str(content))
+
+
+def _count_messages_tokens(messages) -> int:
+    # Use a small per-message overhead to stay below provider-side counting.
+    return sum(_message_content_tokens(message.content) + 4 for message in messages) + 2
+
+
+def _trim_latest_human_text(messages, target_input_tokens: int):
+    for message in reversed(messages):
+        if not isinstance(message, HumanMessage):
+            continue
+        if isinstance(message.content, str):
+            content_tokens = _count_text_tokens(message.content)
+            current_total = _count_messages_tokens(messages)
+            new_budget = max(content_tokens - (current_total - target_input_tokens), 256)
+            message.content = _truncate_text_by_tokens(message.content, new_budget)
+            return
+        if isinstance(message.content, list):
+            for item in message.content:
+                if isinstance(item, dict) and item.get('type') == 'text':
+                    content_tokens = _count_text_tokens(item.get('text', ''))
+                    current_total = _count_messages_tokens(messages)
+                    new_budget = max(content_tokens - (current_total - target_input_tokens), 256)
+                    item['text'] = _truncate_text_by_tokens(item.get('text', ''), new_budget)
+                    return
+
+
+def _fit_workstation_messages_to_context(messages, llm: BishengLLM) -> tuple[list, int]:
+    context_tokens = _get_model_context_tokens(llm)
+    output_tokens = min(_get_requested_output_tokens(llm), max(_WORKSTATION_MIN_OUTPUT_TOKENS,
+                                                              context_tokens // 2))
+    target_input_tokens = context_tokens - output_tokens - _WORKSTATION_CONTEXT_SAFETY_TOKENS
+    input_tokens = _count_messages_tokens(messages)
+    if input_tokens > target_input_tokens:
+        _trim_latest_human_text(messages, target_input_tokens)
+        input_tokens = _count_messages_tokens(messages)
+
+    if input_tokens + output_tokens + _WORKSTATION_CONTEXT_SAFETY_TOKENS > context_tokens:
+        hard_input_target = context_tokens - _WORKSTATION_MIN_OUTPUT_TOKENS - _WORKSTATION_CONTEXT_SAFETY_TOKENS
+        if input_tokens > hard_input_target:
+            _trim_latest_human_text(messages, hard_input_target)
+            input_tokens = _count_messages_tokens(messages)
+        output_tokens = max(_WORKSTATION_MIN_OUTPUT_TOKENS,
+                            context_tokens - input_tokens - _WORKSTATION_CONTEXT_SAFETY_TOKENS)
+
+    logger.info(
+        f'workstation token budget input={input_tokens}, output={output_tokens}, context={context_tokens}'
+    )
+    return messages, output_tokens
 
 
 def step_message(stepId, runId, index, msgId):
@@ -567,15 +714,8 @@ async def chat_completions(
                 image_bases64.extend(results[0])
                 file_contents = results[1]
 
-                file_context = '\n'.join(file_contents)[:max_token]
+                file_context = _truncate_text_by_tokens('\n'.join(file_contents), max_token)
                 prompt = wsConfig.fileUpload.prompt.format(file_content=file_context, question=data.text)
-
-            # Update message with the generated prompt if it changed
-            if prompt != data.text:
-                extra = json.loads(message.extra) if message.extra else {}
-                extra['prompt'] = prompt
-                message.extra = json.dumps(extra, ensure_ascii=False)
-                await ChatMessageDao.ainsert_one(message)
 
             # Prepare message history and call LLM
             history_messages = (await WorkStationService.get_chat_history(conversationId, 8))[:-1]
@@ -593,13 +733,24 @@ async def chat_completions(
                 system_content = wsConfig.systemPrompt.format(cur_date=datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
                 inputs.insert(0, SystemMessage(content=system_content))
 
+            inputs, output_tokens = _fit_workstation_messages_to_context(inputs, bishengllm)
+
+            # Update message with the final prompt if it changed, after token-budget trimming.
+            if content and isinstance(content[0], dict):
+                prompt = content[0].get('text', prompt)
+            if prompt != data.text:
+                extra = json.loads(message.extra) if message.extra else {}
+                extra['prompt'] = prompt
+                message.extra = json.dumps(extra, ensure_ascii=False)
+                await ChatMessageDao.ainsert_one(message)
+
             if not stepId:
                 stepId = 'step_' + uuid4().hex
                 yield step_message(stepId, runId, index, f'msg_{uuid4().hex}')
                 index += 1
 
             # Stream LLM response
-            async for chunk in bishengllm.astream(inputs):
+            async for chunk in bishengllm.astream(inputs, max_tokens=output_tokens):
                 content = chunk.content
                 reasoning_content = chunk.additional_kwargs.get('reasoning_content', '')
 

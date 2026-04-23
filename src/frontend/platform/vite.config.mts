@@ -16,6 +16,7 @@ const app_env = { BASE_URL: '' } // /custom
 // Use environment variables to determine proxy targets.
 const target = process.env.VITE_PROXY_TARGET || "http://127.0.0.1:7860";
 const fileServiceTarget = process.env.VITE_FILE_SERVICE_TARGET || "http://127.0.0.1:9000";
+const workspaceClientTarget = process.env.VITE_WORKSPACE_CLIENT_TARGET || "http://127.0.0.1:4001";
 
 // 公共代理配置
 const commonProxyOptions = {
@@ -26,11 +27,11 @@ const commonProxyOptions = {
 };
 
 // 带重写功能的配置生成器
-const createProxyConfig = (target, rewrite = true) => ({
+const createProxyConfig = (target, rewrite = true, rewriteBase = app_env.BASE_URL) => ({
   ...commonProxyOptions,
   target,
   ...(rewrite && {
-    rewrite: (path) => path.replace(new RegExp(`^${app_env.BASE_URL}`), '')
+    rewrite: (path) => path.replace(new RegExp(`^${rewriteBase}`), '')
   }),
   configure: (proxy, options) => {
     proxy.on('proxyReq', (proxyReq, req, res) => {
@@ -42,9 +43,14 @@ const createProxyConfig = (target, rewrite = true) => ({
 // API路由配置
 const apiRoutes = ["/api/", "/health"];
 const apiProxyConfig = createProxyConfig(target);
+const workspaceApiRoutes = ["/workspace/api/", "/workspace/health"];
+const workspaceApiProxyConfig = createProxyConfig(target, true, `${app_env.BASE_URL}/workspace`);
 // 文件服务路由配置
 const fileServiceRoutes = ["/bisheng", "/tmp-dir"];
 const fileServiceProxyConfig = createProxyConfig(fileServiceTarget);
+const workspaceFileServiceRoutes = ["/workspace/bisheng", "/workspace/tmp-dir"];
+const workspaceFileServiceProxyConfig = createProxyConfig(fileServiceTarget, true, `${app_env.BASE_URL}/workspace`);
+const workspaceClientProxyConfig = createProxyConfig(workspaceClientTarget, false);
 
 const proxyTargets = {};
 
@@ -56,6 +62,13 @@ apiRoutes.forEach(route => {
 fileServiceRoutes.forEach(route => {
   proxyTargets[`${app_env.BASE_URL}${route}`] = fileServiceProxyConfig;
 });
+workspaceApiRoutes.forEach(route => {
+  proxyTargets[`${app_env.BASE_URL}${route}`] = workspaceApiProxyConfig;
+});
+workspaceFileServiceRoutes.forEach(route => {
+  proxyTargets[`${app_env.BASE_URL}${route}`] = workspaceFileServiceProxyConfig;
+});
+proxyTargets[`${app_env.BASE_URL}/workspace`] = workspaceClientProxyConfig;
 
 
 export default defineConfig(() => {

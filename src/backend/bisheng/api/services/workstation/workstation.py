@@ -250,12 +250,10 @@ class WorkStationService(BaseService):
         for one in messages:
             # bug fix When constructing multi-turn dialogues, the input and response of
             # the user and the assistant were reversed, leading to incorrect question-and-answer sequences.
-            extra = json.loads(one.extra) or {}
-            content = extra['prompt'] if 'prompt' in extra else one.message
             if one.category == MessageCategory.QUESTION.value:
-                chat_history.append(HumanMessage(content=content))
+                chat_history.append(HumanMessage(content=one.message))
             elif one.category == MessageCategory.ANSWER.value:
-                chat_history.append(AIMessage(content=content))
+                chat_history.append(AIMessage(content=one.message))
         logger.info(f'loaded {len(chat_history)} chat history for chat_id {chat_id}')
         return chat_history
 
