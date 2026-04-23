@@ -12,7 +12,7 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import MarkLabel from "./MarkLabel";
-
+import { brand } from "@/config/brand";
 
 export default function HomePage({ onSelect }) {
     const { t } = useTranslation()
@@ -213,7 +213,7 @@ const HeaderSection = ({ BASE_IMAGE_URL, t }) => (
     <div className="flex justify-center place-items-center gap-20">
         <img
             className="w-[138px]"
-            src={`${BASE_IMAGE_URL}/assets/application-start-logo.png`}
+            src={brand.logos.appStartLogo}
             alt="Application Logo"
         />
         <p className="text-2xl leading-[50px] dark:text-[#D4D4D4]">

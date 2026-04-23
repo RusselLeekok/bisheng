@@ -14,7 +14,7 @@ from urllib.parse import urlparse
 
 from bisheng.template.frontend_node.constants import FORCE_SHOW_FIELDS
 from bisheng.utils import constants
-from docstring_parser import parse  # type: ignore
+from docstring_parser import parse # type: ignore
 
 logger = logging.getLogger(__name__)
 

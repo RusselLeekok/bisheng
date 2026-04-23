@@ -12,7 +12,18 @@
     <!-- window.APP_CONFIG.baseUrl -->
     <!-- style -->
     <script>
-        document.title = window.BRAND_CONFIG.brandName.en
+        document.title = window.BRAND_CONFIG.brandName.zh
+            document.title = window.BRAND_CONFIG.brandName.en
+
+        const faviconLink = document.querySelector('link[rel="icon"]');
+        const faviconPath = window.BRAND_CONFIG?.logos?.favicon;
+        if (faviconLink && faviconPath) {
+        faviconLink.href = "<%- baseUrl %>" + faviconUrl;
+        }
+
+        const watermarkText = window.BRAND_CONFIG?.text?.watermark || "RXD";
+        document.documentElement.style.setProperty("--brand-watermark-text", `"${watermarkText}"`);
+
         
         fetch('<%- baseUrl %>/api/v1/web/config').then(function (res) {
             return res.json()

@@ -3,6 +3,7 @@ import { useEffect, useContext } from "react"
 import { locationContext } from "../../../contexts/locationContext"
 import { useToast } from "@/components/bs-ui/toast/use-toast"
 import { useTranslation } from "react-i18next"
+import { brand } from "@/config/brand";
 
 export default function Word({ data, workflow }) {
     const { appConfig } = useContext(locationContext)
@@ -32,7 +33,12 @@ export default function Word({ data, workflow }) {
             // 文档地址，绝对路径
             url: data.path,
             // 文档标题
-            title: 'bisheng.docx',
+            title: brand.text.docTitle,
+            logo: {
+                image: brand.logos.officeLogo,
+                imageDark: brand.logos.officeLogo,
+                url: "https://example.com"
+            },
             permissions: {
                 changeHistory: true,
                 comment: true,

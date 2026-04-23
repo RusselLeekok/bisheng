@@ -1,0 +1,14 @@
+database_url: "mysql+pymysql://bisheng:gAAAAABp6XyxiRs23nfONcpElCvoRiVdxp0k7Q5QYqLwoQPpTWSZlT8ltVom5TXFS-z_0izj4b4lXUcHTqJZyOmL2Rt7NDkNrQ==@127.0.0.1:3306/bisheng?charset=utf8mb4"
+
+redis_url: "redis://:gAAAAABp6Xyxb_u1fvAzgd-UxLGRtRIireyOpn9a4_GxB40f5F9gsXkggFM0egYbslTic53uqb4xohJm98CIIQ1DXw0KoOw8Zg==@127.0.0.1:6379/1"
+celery_redis_url: "redis://:gAAAAABp6Xyxb_u1fvAzgd-UxLGRtRIireyOpn9a4_GxB40f5F9gsXkggFM0egYbslTic53uqb4xohJm98CIIQ1DXw0KoOw8Zg==@127.0.0.1:6379/2"
+
+object_storage:
+  type: minio
+  minio:
+    schema: false
+    cert_check: false
+    endpoint: 127.0.0.1:9000
+    sharepoint: 127.0.0.1:9000
+    access_key: minioadmin
+    secret_key: minioadmin

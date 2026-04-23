@@ -15,6 +15,10 @@ from urllib.parse import unquote, urlparse
 from uuid import uuid4
 
 import aiofiles
+try:
+    import cchardet as charset_detector
+except ImportError:
+    import chardet as charset_detector
 import cchardet
 import requests
 from appdirs import user_cache_dir

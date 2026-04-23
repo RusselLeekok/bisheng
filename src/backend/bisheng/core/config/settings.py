@@ -5,7 +5,7 @@ import re
 from typing import Dict, List, Optional, Union
 
 from celery.schedules import crontab
-from cryptography.fernet import Fernet
+from cryptography.fernet import Fernet, InvalidToken
 from loguru import logger
 from pydantic import ConfigDict, BaseModel, Field, field_validator, model_validator
 
@@ -19,6 +19,12 @@ def encrypt_token(token: str):
 def decrypt_token(token: str):
     return Fernet(secret_key).decrypt(token).decode()
 
+
+def decrypt_url_password(password: str):
+    try:
+        return decrypt_token(password)
+    except InvalidToken:
+        return password
 
 class LoggerConf(BaseModel):
     """Looger Config"""
