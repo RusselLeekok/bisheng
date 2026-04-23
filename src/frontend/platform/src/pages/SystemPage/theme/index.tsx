@@ -59,8 +59,15 @@ const themeKeys = {
 };
 
 export default function Theme() {
-    const [theme, setTheme] = useState(Object.keys(window.ThemeStyle.comp).length ? window.ThemeStyle.comp : { ...defaultTheme });
-    const [bg, setBg] = useState(window.ThemeStyle.bg || 'logo')
+    const initialTheme = window.ThemeStyle?.comp && Object.keys(window.ThemeStyle.comp).length
+        ? window.ThemeStyle.comp
+        : { ...defaultTheme };
+    const initialBg = window.ThemeStyle?.bg || 'logo';
+    const [theme, setTheme] = useState(initialTheme);
+    const [bg, setBg] = useState(initialBg);
+    if (!window.ThemeStyle) {
+        window.ThemeStyle = { comp: initialTheme, bg: initialBg };
+    }
     const { t } = useTranslation()
     const applyTheme = (theme) => {
         Object.keys(theme).forEach(key => {
