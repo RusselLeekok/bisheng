@@ -1,23 +1,23 @@
 window.BRAND_CONFIG = {
     // 1. 系统品牌名称
     brandName: {
-        zh: "BISHENG",
-        en: "BISHENG",
+        zh: "融达信数据",
+        en: "融达信数据",
         ja: "BISHENG"
     },
 
     // 2. 灵思智能体
     linsightAgentName: {
-        zh: "灵思",
-        en: "Linsight",
-        ja: "Linsight"
+        zh: "创想",
+        en: "Csight",
+        ja: "Csight"
     },
 
     // 3. 灵思中英文结合展示名
     linsightFullName: {
-        zh: "灵思Linsight",
-        en: "Linsight",
-        ja: "Linsight"
+        zh: "创想sight",
+        en: "Csight",
+        ja: "Csight"
     },
 
     // 4. Loading 图标配置
@@ -26,14 +26,14 @@ window.BRAND_CONFIG = {
 
     // 5. 品牌图片
     logos: {
-        favicon: "/assets/bisheng/favicon.ico",
-        header: "/assets/bisheng/login-logo-small-2.png",
-        loginSmall: "/assets/bisheng/login-logo-small-2.png",
-        loginSmallDark: "/assets/bisheng/logo-small-dark.png",
-        loginBig: "/assets/bisheng/login-logo-big-2.png",
-        loginDark: "/assets/bisheng/login-logo-dark.png",
-        officeLogo: "/assets/bisheng/logo.jpeg",
-        appStartLogo: "/assets/bisheng/application-start-logo.png"
+        favicon: "/assets/bisheng/favicon.ico",                           // 网站图标（浏览器标签页图标）
+        header: "/assets/bisheng/login-logo-small-2.png",                // 页面头部/导航栏Logo（浅色模式）
+        loginSmall: "/assets/bisheng/login-logo-small-2.png",            // 登录页小尺寸Logo（浅色模式）
+        loginSmallDark: "/assets/bisheng/logo-small-dark.png",           // 登录页小尺寸Logo（深色模式）
+        loginBig: "/assets/bisheng/login-logo-big-2.png",                // 登录页大尺寸Logo（浅色模式）
+        loginDark: "/assets/bisheng/login-logo-dark.png",                // 登录页Logo（深色模式）
+        officeLogo: "/assets/bisheng/logo.jpeg",                         // 办公/企业Logo
+        appStartLogo: "/assets/bisheng/application-start-logo.png"       // 应用启动页/加载页Logo
     },
 
     // 6. 外链
@@ -53,7 +53,7 @@ window.BRAND_CONFIG = {
 
     // 8. 文案
     text: {
-        watermark: "BISHENG",
-        docTitle: "bisheng.docx"
+        watermark: "融达信数据",
+        docTitle: "RDX.docx"
     }
 };
