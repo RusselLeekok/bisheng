@@ -1,4 +1,4 @@
-import { lazy, useEffect } from "react";
+import { lazy, useContext } from "react";
 import { Navigate, createBrowserRouter } from "react-router-dom";
 import MainLayout from "../layout/MainLayout";
 import { LoginPage } from "../pages/LoginPage/login";
@@ -9,6 +9,7 @@ import { AppNumType } from "../types/app";
 import RouteErrorBoundary from "./RouteErrorBoundary";
 import EditorPage from "@/pages/Dashboard/editor";
 import SharePage from "@/pages/Dashboard/share";
+import { userContext } from "@/contexts/userContext";
 
 // 异步加载页面组件
 const Templates = lazy(() => import("@/pages/BuildPage/appTemps"));
@@ -51,17 +52,28 @@ const baseConfig = {
   basename: __APP_ENV__.BASE_URL
 }
 
-const RedirectToExternalLink = () => {
-  useEffect(() => {
-    const path = import.meta.env.DEV ? '/admin' : '/workspace/'
-    window.location.href = window.location.origin + path;
-  }, []);
+const MENU_ROUTE_MAP = [
+  { key: 'build', path: '/build/apps' },
+  { key: 'knowledge', path: '/filelib' },
+  { key: 'board', path: '/dashboard' },
+  { key: 'model', path: '/model/management' },
+  { key: 'evaluation', path: '/evaluation' },
+  { key: 'label', path: '/label' },
+];
 
-  return null;
+const AdminEntry = () => {
+  const { user } = useContext(userContext);
+  const webMenu = user?.web_menu || [];
+  const target = user?.role === 'admin'
+    ? MENU_ROUTE_MAP[0]
+    : MENU_ROUTE_MAP.find(item => webMenu.includes(item.key));
+
+  return <Navigate to={target?.path || '/label'} replace />;
 };
 
 const privateRouter = [
-  { path: "/", element: <RedirectToExternalLink /> },
+  { path: "/", element: <AdminEntry /> },
+  { path: "/admin", element: <AdminEntry /> },
   {
     path: "/",
     element: <MainLayout />,

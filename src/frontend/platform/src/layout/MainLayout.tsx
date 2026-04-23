@@ -140,7 +140,7 @@ export default function MainLayout() {
                         </NavLink> */}
                         {
                             isMenu('board') && <>
-                                <NavLink to='/dashboard ' className={`navlink inline-flex rounded-lg w-full px-6 hover:bg-nav-hover h-12 mb-[3.5px]`}>
+                                <NavLink to='/dashboard' className={`navlink inline-flex rounded-lg w-full px-6 hover:bg-nav-hover h-12 mb-[3.5px]`}>
                                     <DashboardIcon className="h-6 w-6 my-[12px]" /><span className="mx-[14px] max-w-[48px] text-[14px] leading-[48px]">{t('menu.dashboard')}</span>
                                 </NavLink>
                             </>

@@ -1,0 +1,15 @@
+services:
+  backend:
+    image: ${BISHENG_BACKEND_IMAGE:-bisheng-backend:local}
+    build:
+      context: ../src/backend
+      dockerfile: Dockerfile
+
+  backend_worker:
+    image: ${BISHENG_BACKEND_IMAGE:-bisheng-backend:local}
+
+  frontend:
+    image: ${BISHENG_FRONTEND_IMAGE:-bisheng-frontend:local}
+    build:
+      context: ../src/frontend
+      dockerfile: Dockerfile

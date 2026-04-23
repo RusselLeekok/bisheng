@@ -78,12 +78,33 @@ unzip main.zip && cd bisheng-main/docker
 ```
 启动BISHENG
 ```bash
+# 前端
+# npm运行
+cd .\src\frontend\platform
+npm run start
+
+# docker运行
+cd .\bisheng\docke
+docker compose -f docker-compose-frontend-local.yml -p bisheng-frontend-local up -d
+docker compose -f docker-compose-frontend-local.yml -p bisheng stop frontend
+
+# 后端
+cd .\bisheng\src\backend
+sudo service mysql start
+redis-server
+./minio server /data --console-address ":9001"
 # 进入bisheng/docker或bisheng-main/docker目录，执行
 docker compose -f docker-compose.yml -p bisheng up -d
 ```
 启动后，在浏览器中访问 http://IP:3001 ，出现登录页，进行用户注册。默认第一个注册的用户会成为系统admin。
 
 其他安装部署问题参考：[私有化部署](https://dataelem.feishu.cn/wiki/BSCcwKd4Yiot3IkOEC8cxGW7nPc)
+
+## 构建完整项目前后端镜像
+```bash
+cd .\bisheng
+docker compose -f docker\docker-compose.yml -f docker\docker-compose.local-build.yml -p bisheng build backend frontend
+```
 
 
 ## 资源
