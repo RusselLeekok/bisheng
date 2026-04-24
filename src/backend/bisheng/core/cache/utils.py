@@ -16,9 +16,9 @@ from uuid import uuid4
 
 import aiofiles
 try:
-    import cchardet
+    import cchardet as charset_detector
 except ImportError:
-    import chardet as cchardet
+    import chardet as charset_detector
 import requests
 from appdirs import user_cache_dir
 from fastapi import UploadFile
@@ -169,7 +169,7 @@ def save_binary_file(content: str, file_name: str, accepted_types: list[str]) ->
 
 def detect_encoding_cchardet(file_bytes: bytes, num_bytes=1024):
     """UsecchardetEncoding of the test file"""
-    result = cchardet.detect(file_bytes)
+    result = charset_detector.detect(file_bytes)
     encoding = result['encoding']
     confidence = result['confidence']
     return encoding, confidence

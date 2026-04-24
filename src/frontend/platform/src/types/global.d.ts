@@ -3,6 +3,10 @@ export { };
 declare global {
     interface Window {
         SearchSkillsPage: any;
+        ThemeStyle?: {
+            comp?: Record<string, any>;
+            bg?: string;
+        };
         errorAlerts: (errorList: string[]) => void;
         _flow: any;
         BRAND_CONFIG?: {
