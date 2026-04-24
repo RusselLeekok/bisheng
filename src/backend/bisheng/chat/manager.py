@@ -266,7 +266,6 @@ class ChatManager:
                                         reason='Client disconnected')
             except Exception as e:
                 logger.exception(e)
-            self.clear_client(client_key)
             if work_type == WorkType.GPTS:
                 app_info = await AssistantService.get_one_assistant(client_id)
                 app_type = ApplicationTypeEnum.ASSISTANT

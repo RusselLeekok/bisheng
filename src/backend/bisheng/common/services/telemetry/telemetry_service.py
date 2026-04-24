@@ -10,6 +10,7 @@ from bisheng.common.constants.enums.telemetry import BaseTelemetryTypeEnum
 from bisheng.common.schemas.telemetry.base_telemetry_schema import T_EventData, BaseTelemetryEvent, UserContext, \
     UserGroupInfo, UserRoleInfo
 from bisheng.core.database import get_async_db_session, get_sync_db_session
+from bisheng.core.search.elasticsearch.es_connection import ElasticsearchHostsNotConfiguredError
 from bisheng.core.search.elasticsearch.manager import get_statistics_es_connection, get_statistics_es_connection_sync
 from bisheng.user.domain.models.user import User
 from bisheng.user.domain.repositories.implementations.user_repository_impl import UserRepositoryImpl
@@ -62,20 +63,67 @@ class BaseTelemetryService(object):
     def __init__(self):
         self._es_client: Optional[AsyncElasticsearch] = None
         self._es_client_sync: Optional[Elasticsearch] = None
+        self._disabled = False
+        self._disabled_reason: Optional[str] = None
 
         # Thread pool for synchronizing methods
         self.thread_pool = ThreadPoolExecutor(max_workers=10)
         # Create a semaphore to limit the number of concurrency
         self._semaphore = Semaphore(10)
 
+    def _disable_telemetry(self, reason: str):
+        if self._disabled and self._disabled_reason == reason:
+            return
+
+        self._disabled = True
+        self._disabled_reason = reason
+        self._es_client = None
+        self._es_client_sync = None
+        self._index_initialized = False
+        logger.warning(f"Telemetry disabled: {reason}")
+
+    async def _ensure_es_client(self) -> bool:
+        if self._disabled:
+            return False
+
+        if self._es_client:
+            return True
+
+        try:
+            self._es_client = await get_statistics_es_connection()
+            return True
+        except (ElasticsearchHostsNotConfiguredError, KeyError) as e:
+            self._disable_telemetry(f"statistics Elasticsearch is unavailable: {e}")
+        except Exception as e:
+            logger.error(f"Failed to initialize telemetry async client: {e}", exc_info=True)
+
+        return False
+
+    def _ensure_es_client_sync(self) -> bool:
+        if self._disabled:
+            return False
+
+        if self._es_client_sync:
+            return True
+
+        try:
+            self._es_client_sync = get_statistics_es_connection_sync()
+            return True
+        except (ElasticsearchHostsNotConfiguredError, KeyError) as e:
+            self._disable_telemetry(f"statistics Elasticsearch is unavailable: {e}")
+        except Exception as e:
+            logger.error(f"Failed to initialize telemetry sync client: {e}", exc_info=True)
+
+        return False
+
     async def _ensure_index(self):
         """Initialize the Elasticsearch index safely"""
         # Double-check locking pattern could be used here, but simple boolean check is "good enough" for loose consistency
-        if self._index_initialized:
-            return
+        if self._disabled or self._index_initialized:
+            return self._index_initialized
 
-        if not self._es_client:
-            self._es_client = await get_statistics_es_connection()
+        if not await self._ensure_es_client():
+            return False
 
         try:
             exists = await self._es_client.indices.exists(index=self._index_name)
@@ -91,13 +139,14 @@ class BaseTelemetryService(object):
             logger.error(f"ES Index check failed: {e}")
 
         self._index_initialized = True
+        return True
 
     def _ensure_index_sync(self):
-        if self._index_initialized:
-            return
+        if self._disabled or self._index_initialized:
+            return self._index_initialized
 
-        if not self._es_client_sync:
-            self._es_client_sync = get_statistics_es_connection_sync()
+        if not self._ensure_es_client_sync():
+            return False
 
         try:
             exists = self._es_client_sync.indices.exists(index=self._index_name)
@@ -109,6 +158,7 @@ class BaseTelemetryService(object):
                 logger.error(f"Failed to create ES index sync: {e}")
 
         self._index_initialized = True
+        return True
 
     @staticmethod
     async def _init_user_context(user_id: int) -> UserContext:
@@ -192,6 +242,8 @@ class BaseTelemetryService(object):
 
         # Get semaphore
         async with self._semaphore:
+            if self._disabled or not self._es_client:
+                return
             try:
                 logger.debug(f"Recording telemetry event for user_id {user_id}, event_type {event_type}")
                 # get user info (With Exception Capture)
@@ -218,14 +270,17 @@ class BaseTelemetryService(object):
     async def log_event(self, user_id: int, event_type: BaseTelemetryTypeEnum, trace_id: str,
                         event_data: T_EventData = None):
         """Log events asynchronously to Elasticsearch (Safe Version)"""
+        if self._disabled:
+            return
+
         try:
             # Ensuring ES CONNECT
-            if not self._es_client:
-                self._es_client = await get_statistics_es_connection()
+            if not await self._ensure_es_client():
+                return
 
             # Make sure the index exists (Lazy Init)
-            if not self._index_initialized:
-                await self._ensure_index()
+            if not self._index_initialized and not await self._ensure_index():
+                return
 
             # Log events asynchronously
             asyncio.create_task(
@@ -244,6 +299,8 @@ class BaseTelemetryService(object):
     # record event task thread sync
     def _record_event_task_sync(self, user_id: int, event_type: BaseTelemetryTypeEnum, trace_id: str,
                                 event_data: T_EventData = None):
+        if self._disabled or not self._es_client_sync:
+            return
         try:
             logger.debug(f"Recording telemetry event sync for user_id {user_id}, event_type {event_type}")
             user_context = self._init_user_context_sync(user_id)
@@ -261,12 +318,15 @@ class BaseTelemetryService(object):
     def log_event_sync(self, user_id: int, event_type: BaseTelemetryTypeEnum, trace_id: str,
                        event_data: T_EventData = None):
         """Synchronize logging events to Elasticsearch (Safe Version)"""
-        try:
-            if not self._es_client_sync:
-                self._es_client_sync = get_statistics_es_connection_sync()
+        if self._disabled:
+            return
 
-            if not self._index_initialized:
-                self._ensure_index_sync()
+        try:
+            if not self._ensure_es_client_sync():
+                return
+
+            if not self._index_initialized and not self._ensure_index_sync():
+                return
 
             # Perform synchronization tasks using thread pools
             self.thread_pool.submit(

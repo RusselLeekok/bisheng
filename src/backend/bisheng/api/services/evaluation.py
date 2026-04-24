@@ -2,6 +2,7 @@ import asyncio
 import io
 import json
 import os
+import threading
 from collections import defaultdict
 from copy import deepcopy
 from io import BytesIO
@@ -35,7 +36,8 @@ from bisheng.llm.domain.services import LLMService
 from bisheng.user.domain.models.user import UserDao
 from bisheng.utils import generate_uuid
 from bisheng.worker.workflow.redis_callback import RedisCallback
-from bisheng.worker.workflow.tasks import execute_workflow, continue_workflow, workflow_stateful_worker
+from bisheng.worker.workflow.tasks import (execute_workflow, execute_workflow_local, continue_workflow,
+                                           continue_workflow_local, workflow_stateful_worker)
 from bisheng.workflow.common.workflow import WorkflowStatus
 
 expire = 600
@@ -250,7 +252,14 @@ def execute_workflow_get_answer(workflow_info: FlowVersion, evaluation: Evaluati
     hash_key = generate_uuid()
     worker_node = workflow_stateful_worker.find_task_node_sync(hash_key)
 
-    execute_workflow.apply_async([unique_id, workflow_id, chat_id, user_id], queue=worker_node)
+    if worker_node:
+        execute_workflow.apply_async([unique_id, workflow_id, chat_id, user_id], queue=worker_node)
+    else:
+        logger.warning('workflow worker queue not found, run task in local backend process')
+        thread = threading.Thread(target=execute_workflow_local,
+                                  args=(unique_id, workflow_id, chat_id, user_id),
+                                  daemon=True)
+        thread.start()
 
     # Listen for execution results of workflows
     input_event = None
@@ -269,7 +278,14 @@ def execute_workflow_get_answer(workflow_info: FlowVersion, evaluation: Evaluati
         workflow.set_user_input({input_event.message.get('node_id'): {"user_input": question}})
         workflow.set_workflow_status(WorkflowStatus.INPUT_OVER.value)
         worker_node = workflow_stateful_worker.find_task_node_sync(hash_key)
-        continue_workflow.apply_async([unique_id, workflow_id, chat_id, user_id], queue=worker_node)
+        if worker_node:
+            continue_workflow.apply_async([unique_id, workflow_id, chat_id, user_id], queue=worker_node)
+        else:
+            logger.warning('workflow worker queue not found, run task in local backend process')
+            thread = threading.Thread(target=continue_workflow_local,
+                                      args=(unique_id, workflow_id, chat_id, user_id),
+                                      daemon=True)
+            thread.start()
         events = []
         for event in workflow.sync_get_response_until_break():
             events.append(event)

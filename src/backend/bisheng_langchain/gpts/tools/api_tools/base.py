@@ -1,3 +1,4 @@
+import os
 from typing import Any, Dict, Tuple, Type, Union, Optional, List
 
 from langchain_core.tools import BaseTool, Tool
@@ -5,6 +6,21 @@ from loguru import logger
 from pydantic import ConfigDict, model_validator, BaseModel, Field
 
 from bisheng_langchain.utils.requests import Requests, RequestsWrapper
+
+
+DEFAULT_OPENAPI_TOOL_TIMEOUT = 120
+
+
+def get_default_openapi_tool_timeout() -> int:
+    timeout = os.getenv('BISHENG_OPENAPI_TOOL_TIMEOUT')
+    if not timeout:
+        return DEFAULT_OPENAPI_TOOL_TIMEOUT
+    try:
+        return max(int(float(timeout)), 1)
+    except ValueError:
+        logger.warning('Invalid BISHENG_OPENAPI_TOOL_TIMEOUT={}, fallback to {}',
+                       timeout, DEFAULT_OPENAPI_TOOL_TIMEOUT)
+        return DEFAULT_OPENAPI_TOOL_TIMEOUT
 
 
 class ApiArg(BaseModel):
@@ -28,7 +44,7 @@ class APIToolBase(BaseModel):
     client: Any = Field(default=None, exclude=True)  #: :meta private:
     async_client: Any = Field(default=None, exclude=True)  #: :meta private:
     headers: Dict[str, Any] = {}
-    request_timeout: int = 30
+    request_timeout: int = Field(default_factory=get_default_openapi_tool_timeout)
     url: str = None
     params: Dict[str, Any] = {}
     input_key: str = 'keyword'
@@ -40,7 +56,7 @@ class APIToolBase(BaseModel):
     @classmethod
     def validate_environment(cls, values: Dict) -> Dict:
         """Validate that api key and python package exists in environment."""
-        timeout = values.get('request_timeout', 30)
+        timeout = values.get('request_timeout') or get_default_openapi_tool_timeout()
         if not values.get('client'):
             values['client'] = Requests(headers=values.get('headers'), request_timeout=timeout,
                                         proxy=values.get('proxy'))

@@ -1,14 +1,28 @@
-database_url: "mysql+pymysql://bisheng:gAAAAABp6XyxiRs23nfONcpElCvoRiVdxp0k7Q5QYqLwoQPpTWSZlT8ltVom5TXFS-z_0izj4b4lXUcHTqJZyOmL2Rt7NDkNrQ==@127.0.0.1:3306/bisheng?charset=utf8mb4"
+database_url: "mysql+pymysql://root:gAAAAABp6xRN6RsGmZ-hH4_wX2fGTjnGkMa9l25Ee7XY7x80BbBgBQE4GihTQL_7qpV876IQ5be1SibEjlrK6O_aRt5lV75kiA==@127.0.0.1:3307/bisheng?charset=utf8mb4"
 
-redis_url: "redis://:gAAAAABp6Xyxb_u1fvAzgd-UxLGRtRIireyOpn9a4_GxB40f5F9gsXkggFM0egYbslTic53uqb4xohJm98CIIQ1DXw0KoOw8Zg==@127.0.0.1:6379/1"
-celery_redis_url: "redis://:gAAAAABp6Xyxb_u1fvAzgd-UxLGRtRIireyOpn9a4_GxB40f5F9gsXkggFM0egYbslTic53uqb4xohJm98CIIQ1DXw0KoOw8Zg==@127.0.0.1:6379/2"
+redis_url: "redis://127.0.0.1:6379/1"
+celery_redis_url: "redis://127.0.0.1:6379/2"
 
 object_storage:
   type: minio
   minio:
     schema: false
     cert_check: false
-    endpoint: 127.0.0.1:9000
-    sharepoint: 127.0.0.1:9000
+    endpoint: 127.0.0.1:9100
+    sharepoint: 127.0.0.1:9100
     access_key: minioadmin
     secret_key: minioadmin
+
+vector_stores:
+  milvus:
+    connection_args:
+      host: 127.0.0.1
+      port: "19530"
+      user: ""
+      password: ""
+      secure: false
+    is_partition: true
+    partition_suffix: "1"
+  elasticsearch:
+    url: http://127.0.0.1:9200
+    ssl_verify: {}

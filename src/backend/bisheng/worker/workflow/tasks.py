@@ -85,6 +85,11 @@ def _execute_workflow(unique_id: str, workflow_id: str, chat_id: str, user_id: i
 @bisheng_celery.task
 def execute_workflow(unique_id: str, workflow_id: str, chat_id: str, user_id: int, source: str = "platform"):
     """ Implementationworkflow """
+    execute_workflow_local(unique_id, workflow_id, chat_id, user_id, source)
+
+
+def execute_workflow_local(unique_id: str, workflow_id: str, chat_id: str, user_id: int, source: str = "platform"):
+    """Execute workflow in the current process when no workflow worker is available."""
     trace_id_var.set(unique_id)
     start_time = time.time()
     try:
@@ -135,6 +140,11 @@ def _continue_workflow(unique_id: str, workflow_id: str, chat_id: str, user_id: 
 @bisheng_celery.task
 def continue_workflow(unique_id: str, workflow_id: str, chat_id: str, user_id: int, source: str = "platform"):
     """ Resumeworkflow """
+    continue_workflow_local(unique_id, workflow_id, chat_id, user_id, source)
+
+
+def continue_workflow_local(unique_id: str, workflow_id: str, chat_id: str, user_id: int, source: str = "platform"):
+    """Resume workflow in the current process when no workflow worker is available."""
     trace_id_var.set(unique_id)
     start_time = time.time()
     try:

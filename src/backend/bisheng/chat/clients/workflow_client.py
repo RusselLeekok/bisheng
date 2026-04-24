@@ -16,7 +16,8 @@ from bisheng.database.models.message import ChatMessageDao, ChatMessage
 from bisheng.utils import generate_uuid
 from bisheng.utils import get_request_ip
 from bisheng.worker.workflow.redis_callback import RedisCallback
-from bisheng.worker.workflow.tasks import execute_workflow, continue_workflow, workflow_stateful_worker
+from bisheng.worker.workflow.tasks import (execute_workflow, execute_workflow_local, continue_workflow,
+                                           continue_workflow_local, workflow_stateful_worker)
 from bisheng.workflow.common.workflow import WorkflowStatus
 
 
@@ -132,6 +133,14 @@ class WorkflowClient(BaseClient):
             self.hash_key = self.chat_id if self.chat_id else generate_uuid()
         return await workflow_stateful_worker.find_task_node(self.hash_key)
 
+    @staticmethod
+    def _run_workflow_task(task, local_task, args, queue: Optional[str]):
+        if queue:
+            task.apply_async(args, queue=queue)
+            return
+        logger.warning('workflow worker queue not found, run task in local backend process')
+        asyncio.create_task(asyncio.to_thread(local_task, *args))
+
     async def init_workflow(self, message: dict):
         if self.workflow is not None:
             return
@@ -148,8 +157,10 @@ class WorkflowClient(BaseClient):
             await self.workflow.async_set_workflow_status(WorkflowStatus.WAITING.value)
             # Start asynchronous task
 
-            execute_workflow.apply_async([unique_id, workflow_id, self.chat_id, self.user_id],
-                                         queue=await self.get_execute_worker())
+            execute_worker = await self.get_execute_worker()
+            self._run_workflow_task(execute_workflow, execute_workflow_local,
+                                    [unique_id, workflow_id, self.chat_id, self.user_id],
+                                    execute_worker)
             await self.send_response('processing', 'begin', '')
             await self.workflow_run()
         except Exception as e:
@@ -205,7 +216,10 @@ class WorkflowClient(BaseClient):
                 break
             await self.workflow.async_set_user_input(user_input, message_id=message_id, message_content=new_message)
             await self.workflow.async_set_workflow_status(WorkflowStatus.INPUT_OVER.value)
-            continue_workflow.apply_async([self.workflow.unique_id, self.workflow.workflow_id, self.workflow.chat_id,
-                                           self.workflow.user_id], queue=await self.get_execute_worker())
+            execute_worker = await self.get_execute_worker()
+            self._run_workflow_task(continue_workflow, continue_workflow_local,
+                                    [self.workflow.unique_id, self.workflow.workflow_id, self.workflow.chat_id,
+                                     self.workflow.user_id],
+                                    execute_worker)
             await self.workflow_run()
         # await self.workflow_run()

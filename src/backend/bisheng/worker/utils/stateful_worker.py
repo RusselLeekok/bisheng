@@ -42,6 +42,7 @@ class StatefulWorker:
                 return
             alive_nodes = await self.get_all_alive_queues()
             self._base_update_alive_nodes(alive_nodes)
+            self.sync_timestamp = current_time
 
     def update_alive_nodes_sync(self):
         with self.thread_lock:
@@ -50,6 +51,7 @@ class StatefulWorker:
                 return
             alive_nodes = self.get_all_alive_queues_sync()
             self._base_update_alive_nodes(alive_nodes)
+            self.sync_timestamp = current_time
 
     def _base_get_all_alive_queues(self, all_queues: Dict[bytes, bytes]) -> (List[str], List[str]):
         if not all_queues:
@@ -122,7 +124,7 @@ class StatefulWorker:
         return assigned_node
 
     def find_task_node_sync(self, hash_key: str) -> str | None:
-        self.update_alive_nodes()
+        self.update_alive_nodes_sync()
 
         # Get the node bound to the key
         bound_node = self._find_bound_node_sync(hash_key)

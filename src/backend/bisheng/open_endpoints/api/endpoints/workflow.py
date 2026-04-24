@@ -1,3 +1,4 @@
+import asyncio
 import time
 import uuid
 from typing import Optional, List
@@ -22,10 +23,19 @@ from bisheng.core.logger import trace_id_var
 from bisheng.database.models.flow import FlowDao, FlowType
 from bisheng.open_endpoints.domain.utils import get_default_operator, get_default_operator_async
 from bisheng.worker.workflow.redis_callback import RedisCallback
-from bisheng.worker.workflow.tasks import execute_workflow, continue_workflow, workflow_stateful_worker
+from bisheng.worker.workflow.tasks import (execute_workflow, execute_workflow_local, continue_workflow,
+                                           continue_workflow_local, workflow_stateful_worker)
 from bisheng.workflow.common.workflow import WorkflowStatus
 
 router = APIRouter(prefix='/workflow', tags=['OpenAPI', 'Workflow'])
+
+
+def run_workflow_task(task, local_task, args: list, queue: Optional[str]):
+    if queue:
+        task.apply_async(args, queue=queue)
+        return
+    logger.warning('workflow worker queue not found, run task in local backend process')
+    asyncio.create_task(asyncio.to_thread(local_task, *args))
 
 
 @router.post('/invoke')
@@ -67,8 +77,9 @@ async def invoke_workflow(request: Request,
         workflow.set_workflow_data(workflow_info.data, override=override)
         workflow.set_workflow_status(WorkflowStatus.WAITING.value)
         # Start asynchronous task
-        execute_workflow.apply_async([unique_id, workflow_id, chat_id, login_user.user_id, "api"],
-                                     queue=execute_worker)
+        run_workflow_task(execute_workflow, execute_workflow_local,
+                          [unique_id, workflow_id, chat_id, login_user.user_id, "api"],
+                          execute_worker)
     elif status_info['status'] == WorkflowStatus.INPUT.value:
         if not user_input:
             raise ServerError(msg="workflow waiting for user input, but user input not provided")
@@ -77,8 +88,9 @@ async def invoke_workflow(request: Request,
             raise ServerError(msg="message_id is required when providing user input")
         await workflow.async_set_user_input(user_input, message_id, verify_input=True)
         await workflow.async_set_workflow_status(WorkflowStatus.INPUT_OVER.value)
-        continue_workflow.apply_async([unique_id, workflow_id, chat_id, login_user.user_id, "api"],
-                                      queue=execute_worker)
+        run_workflow_task(continue_workflow, continue_workflow_local,
+                          [unique_id, workflow_id, chat_id, login_user.user_id, "api"],
+                          execute_worker)
 
     logger.debug(f'waiting workflow over or input: {workflow_id}, {session_id}')
 
