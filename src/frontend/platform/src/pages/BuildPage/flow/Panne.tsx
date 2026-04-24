@@ -24,6 +24,7 @@ const nodeTypes = { flowNode: FlowNode, noteNode: NoteNode };
 export default function Panne({ flow, preFlow }: { flow: WorkFlow, preFlow: string }) {
     const [reactFlowInstance, setReactFlowInstance] = useState(null);
     const { t } = useTranslation('flow')
+    const flowBgMode = window.ThemeStyle?.bg ?? 'logo'
     // 导入自适应布局
     const fitView = useFlowStore(state => state.fitView)
     const [flowKey, setFlowKey] = useState(1)
@@ -158,7 +159,7 @@ export default function Panne({ flow, preFlow }: { flow: WorkFlow, preFlow: stri
                             maxZoom={8}
                             disableKeyboardA11y={true}
                             // fitView
-                            className={window.ThemeStyle.bg === 'logo' && "flow-bg-logo"}
+                            className={flowBgMode === 'logo' ? "flow-bg-logo" : undefined}
                             onDragOver={onDragOver}
                             onDrop={onDrop}
                             onSelectionChange={onSelectionChange}
@@ -180,8 +181,9 @@ export default function Panne({ flow, preFlow }: { flow: WorkFlow, preFlow: stri
                             // onReconnectStart={onEdgeUpdateStart}
                             // onReconnectEnd={onEdgeUpdateEnd}
                             style={{
-                                backgroundImage: window.ThemeStyle.bg === 'gradient'
-                                    && 'radial-gradient(circle at center bottom, hsl(var(--primary) / 30%) 2%, hsl(var(--primary) / 20%) 25%, hsl(var(--primary) / 5%) 60%, rgba(0, 0, 0, 0) 100%)',
+                                backgroundImage: flowBgMode === 'gradient'
+                                    ? 'radial-gradient(circle at center bottom, hsl(var(--primary) / 30%) 2%, hsl(var(--primary) / 20%) 25%, hsl(var(--primary) / 5%) 60%, rgba(0, 0, 0, 0) 100%)'
+                                    : undefined,
                                 backgroundRepeat: 'no-repeat',
                                 backgroundSize: 'cover',
                             }}
