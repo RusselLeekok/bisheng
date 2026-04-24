@@ -23,6 +23,6 @@ window.BRAND_CONFIG = {
     loadingAnimation: "", // animate-spin | animate-ping | animate-pulse | animate-bounce
 
     logos: {
-        favicon: "/assets/bisheng/favicon.ico",                           // 网站图标（浏览器标签页图标）
+        favicon: "/assets/bisheng/favicon-1.ico",                           // 网站图标（浏览器标签页图标）
     }
 };

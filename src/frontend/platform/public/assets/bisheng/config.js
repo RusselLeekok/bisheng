@@ -26,14 +26,14 @@ window.BRAND_CONFIG = {
 
     // 5. 品牌图片
     logos: {
-        favicon: "/assets/bisheng/favicon.ico",                           // 网站图标（浏览器标签页图标）
-        header: "/assets/bisheng/login-logo-small-2.png",                // 页面头部/导航栏Logo（浅色模式）
-        loginSmall: "/assets/bisheng/login-logo-small-2.png",            // 登录页小尺寸Logo（浅色模式）
-        loginSmallDark: "/assets/bisheng/logo-small-dark.png",           // 登录页小尺寸Logo（深色模式）
-        loginBig: "/assets/bisheng/login-logo-big-2.png",                // 登录页大尺寸Logo（浅色模式）
-        loginDark: "/assets/bisheng/login-logo-dark.png",                // 登录页Logo（深色模式）
-        officeLogo: "/assets/bisheng/logo.jpeg",                         // 办公/企业Logo
-        appStartLogo: "/assets/bisheng/application-start-logo.png"       // 应用启动页/加载页Logo
+        favicon: "/assets/bisheng/favicon-1.ico",                           // 网站图标（浏览器标签页图标）
+        header: "/assets/bisheng/login-logo-small-1.png",                // 页面头部/导航栏Logo（浅色模式）
+        loginSmall: "/assets/bisheng/login-logo-small-1.png",            // 登录页小尺寸Logo（浅色模式）
+        loginSmallDark: "/assets/bisheng/logo-small-dark-1.png",           // 登录页小尺寸Logo（深色模式）
+        loginBig: "/assets/bisheng/login-logo-big-1.png",                // 登录页大尺寸Logo（浅色模式）
+        loginDark: "/assets/bisheng/login-logo-dark-1.png",                // 登录页Logo（深色模式）
+        officeLogo: "/assets/bisheng/logo-1.png",                         // 办公/企业Logo
+        appStartLogo: "/assets/bisheng/application-start-logo-1.png"       // 应用启动页/加载页Logo
     },
 
     // 6. 外链
