@@ -40,13 +40,13 @@ window.BRAND_CONFIG = {
     links: {
         github: "https://tse3-mm.cn.bing.net/th/id/OIP-C.irE_80uH4Nz3d5MT10Ji9QHaEm?o=7rm=3&rs=1&pid=ImgDetMain&o=7&rm=3",
         docs: "https://tse3-mm.cn.bing.net/th/id/OIP-C.irE_80uH4Nz3d5MT10Ji9QHaEm?o=7rm=3&rs=1&pid=ImgDetMain&o=7&rm=3",
-        showGithub: true,
-        showDocs: true
+        showGithub: false,
+        showDocs: false
     },
 
     // 7. 版本号显示
     version: {
-        show: false,
+        show: true,
         prefix: "v",
         label: ""
     },
