@@ -13,17 +13,10 @@ import svgr from "vite-plugin-svgr";
 */
 const app_env = { BASE_URL: '' } // /custom
 
-<<<<<<< HEAD
 // Use environment variable to determine the target.
 const target = process.env.VITE_PROXY_TARGET || "http://127.0.0.1:7860";
 //const target = process.env.VITE_PROXY_TARGET || "http://192.168.106.120:3002";
 const fileServiceTarget = "http://192.168.106.116:9000";
-=======
-// Use environment variables to determine proxy targets.
-const target = process.env.VITE_PROXY_TARGET || "http://127.0.0.1:7860";
-const fileServiceTarget = process.env.VITE_FILE_SERVICE_TARGET || "http://127.0.0.1:9000";
-const workspaceClientTarget = process.env.VITE_WORKSPACE_CLIENT_TARGET || "http://127.0.0.1:4001";
->>>>>>> 0f1da2ccd3f6bc4131b327456f5eb5463ba06717
 
 // 公共代理配置
 const commonProxyOptions = {

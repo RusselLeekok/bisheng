@@ -1,0 +1,56 @@
+None of PyTorch, TensorFlow >= 2.0, or Flax have been found. Models won't be available and only tokenizers, configuration and file/data utilities can be used.
+2026-04-24 09:11:54.345 | DEBUG    | bisheng.common.services.config_service:load_settings_from_yaml:94 - Loading database_url from E:\bisheng\src\backend\bisheng\config.runtime.yaml
+2026-04-24 09:11:54.346 | DEBUG    | bisheng.common.services.config_service:load_settings_from_yaml:94 - Loading redis_url from E:\bisheng\src\backend\bisheng\config.runtime.yaml
+2026-04-24 09:11:54.346 | DEBUG    | bisheng.common.services.config_service:load_settings_from_yaml:94 - Loading celery_redis_url from E:\bisheng\src\backend\bisheng\config.runtime.yaml
+2026-04-24 09:11:54.346 | DEBUG    | bisheng.common.services.config_service:load_settings_from_yaml:94 - Loading object_storage from E:\bisheng\src\backend\bisheng\config.runtime.yaml
+2026-04-24 09:11:54.346 | DEBUG    | bisheng.common.services.config_service:load_settings_from_yaml:94 - Loading autogen_roles from E:\bisheng\src\backend\bisheng\config.runtime.yaml
+2026-04-24 09:11:54.346 | DEBUG    | bisheng.common.services.config_service:load_settings_from_yaml:94 - Loading agents from E:\bisheng\src\backend\bisheng\config.runtime.yaml
+2026-04-24 09:11:54.346 | DEBUG    | bisheng.common.services.config_service:load_settings_from_yaml:94 - Loading chains from E:\bisheng\src\backend\bisheng\config.runtime.yaml
+2026-04-24 09:11:54.346 | DEBUG    | bisheng.common.services.config_service:load_settings_from_yaml:94 - Loading documentloaders from E:\bisheng\src\backend\bisheng\config.runtime.yaml
+2026-04-24 09:11:54.346 | DEBUG    | bisheng.common.services.config_service:load_settings_from_yaml:94 - Loading embeddings from E:\bisheng\src\backend\bisheng\config.runtime.yaml
+2026-04-24 09:11:54.346 | DEBUG    | bisheng.common.services.config_service:load_settings_from_yaml:94 - Loading llms from E:\bisheng\src\backend\bisheng\config.runtime.yaml
+2026-04-24 09:11:54.346 | DEBUG    | bisheng.common.services.config_service:load_settings_from_yaml:94 - Loading memories from E:\bisheng\src\backend\bisheng\config.runtime.yaml
+2026-04-24 09:11:54.346 | DEBUG    | bisheng.common.services.config_service:load_settings_from_yaml:94 - Loading prompts from E:\bisheng\src\backend\bisheng\config.runtime.yaml
+2026-04-24 09:11:54.346 | DEBUG    | bisheng.common.services.config_service:load_settings_from_yaml:94 - Loading textsplitters from E:\bisheng\src\backend\bisheng\config.runtime.yaml
+2026-04-24 09:11:54.346 | DEBUG    | bisheng.common.services.config_service:load_settings_from_yaml:94 - Loading toolkits from E:\bisheng\src\backend\bisheng\config.runtime.yaml
+2026-04-24 09:11:54.346 | DEBUG    | bisheng.common.services.config_service:load_settings_from_yaml:94 - Loading tools from E:\bisheng\src\backend\bisheng\config.runtime.yaml
+2026-04-24 09:11:54.346 | DEBUG    | bisheng.common.services.config_service:load_settings_from_yaml:94 - Loading utilities from E:\bisheng\src\backend\bisheng\config.runtime.yaml
+2026-04-24 09:11:54.346 | DEBUG    | bisheng.common.services.config_service:load_settings_from_yaml:94 - Loading retrievers from E:\bisheng\src\backend\bisheng\config.runtime.yaml
+2026-04-24 09:11:54.346 | DEBUG    | bisheng.common.services.config_service:load_settings_from_yaml:94 - Loading vectorstores from E:\bisheng\src\backend\bisheng\config.runtime.yaml
+2026-04-24 09:11:54.346 | DEBUG    | bisheng.common.services.config_service:load_settings_from_yaml:94 - Loading wrappers from E:\bisheng\src\backend\bisheng\config.runtime.yaml
+2026-04-24 09:11:54.346 | DEBUG    | bisheng.common.services.config_service:load_settings_from_yaml:94 - Loading output_parsers from E:\bisheng\src\backend\bisheng\config.runtime.yaml
+2026-04-24 09:11:54.346 | DEBUG    | bisheng.common.services.config_service:load_settings_from_yaml:94 - Loading input_output from E:\bisheng\src\backend\bisheng\config.runtime.yaml
+Traceback (most recent call last):
+  File "E:\bisheng\src\backend\bisheng\main.py", line 9, in <module>
+    from bisheng.api import router, router_rpc
+  File "E:\bisheng\src\backend\bisheng\api\__init__.py", line 1, in <module>
+    from bisheng.api.router import router, router_rpc
+  File "E:\bisheng\src\backend\bisheng\api\router.py", line 4, in <module>
+    from bisheng.api.v1 import (assistant_router, audit_router, chat_router, component_router,
+  File "E:\bisheng\src\backend\bisheng\api\v1\__init__.py", line 1, in <module>
+    from bisheng.api.v1.assistant import router as assistant_router
+  File "E:\bisheng\src\backend\bisheng\api\v1\assistant.py", line 9, in <module>
+    from bisheng.api.services.assistant import AssistantService
+  File "E:\bisheng\src\backend\bisheng\api\services\assistant.py", line 7, in <module>
+    from bisheng.api.services.assistant_agent import AssistantAgent
+  File "E:\bisheng\src\backend\bisheng\api\services\assistant_agent.py", line 17, in <module>
+    from bisheng.api.utils import build_flow_no_yield
+  File "E:\bisheng\src\backend\bisheng\api\utils.py", line 13, in <module>
+    from bisheng.graph.graph.base import Graph
+  File "E:\bisheng\src\backend\bisheng\graph\__init__.py", line 2, in <module>
+    from bisheng.graph.graph.base import Graph
+  File "E:\bisheng\src\backend\bisheng\graph\graph\base.py", line 4, in <module>
+    from bisheng.graph.graph.constants import lazy_load_vertex_dict
+  File "E:\bisheng\src\backend\bisheng\graph\graph\constants.py", line 1, in <module>
+    from bisheng.graph.vertex import types
+  File "E:\bisheng\src\backend\bisheng\graph\vertex\types.py", line 5, in <module>
+    from bisheng.graph.vertex.base import Vertex
+  File "E:\bisheng\src\backend\bisheng\graph\vertex\base.py", line 8, in <module>
+    from bisheng.interface.initialize import loading
+  File "E:\bisheng\src\backend\bisheng\interface\initialize\loading.py", line 21, in <module>
+    from bisheng.core.cache.utils import file_download
+  File "E:\bisheng\src\backend\bisheng\core\cache\utils.py", line 28
+    >>>>>>> 0f1da2ccd3f6bc4131b327456f5eb5463ba06717
+            ^
+SyntaxError: invalid decimal literal
+ERROR conda.cli.main_run:execute(142): `conda run python E:\bisheng\src\backend\bisheng\main.py` failed. (See above for error)
