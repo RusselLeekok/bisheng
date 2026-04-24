@@ -18,7 +18,7 @@
         const faviconLink = document.querySelector('link[rel="icon"]');
         const faviconPath = window.BRAND_CONFIG?.logos?.favicon;
         if (faviconLink && faviconPath) {
-        faviconLink.href = "<%- baseUrl %>" + faviconUrl;
+        faviconLink.href = "<%- baseUrl %>" + faviconPath;
         }
 
         const watermarkText = window.BRAND_CONFIG?.text?.watermark || "RXD";
