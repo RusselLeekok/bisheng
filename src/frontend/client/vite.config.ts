@@ -141,6 +141,10 @@ export default defineConfig(({ command }) => ({
         {
           src: 'node_modules/pdfjs-dist/build/pdf.worker.min.js',
           dest: './'
+        },
+        {
+          src: 'public/vditor',
+          dest: './'
         }
       ]
     }),
